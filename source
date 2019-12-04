@@ -153,16 +153,17 @@ void draw1() {
 	//draw brick
 	//brick.drawRect(10, 460, 150, 20);
 	int i, j;
+	int x = 10;
+	int y = 460;
 	for (i = 0; i < Row; i++)
 	{
 		for (j = 0; j < Column; j++)
 		{
-			int x = brick[i][j].get_brick_pos_x() + 160;
-			brick[i][j].set_brick_pos_x(x);
-			brick[i][j].drawRect(brick[i][j].get_brick_pos_x(), brick[i][j].get_brick_pos_y(), brick[i][j].get_brick_width(), brick[i][j].get_brick_height());
-			
+			brick[i][j].drawRect(x, y, brick[i][j].get_brick_width(), brick[i][j].get_brick_height());
+			x += 160;
 		}
-
+		y += 30;
+		x = 10;
 	//	//int y = brick[i][j].get_brick_pos_y() - 25;
 	//}
 
