@@ -1,0 +1,250 @@
+#include "PlayGround.h"
+#include"Racket.h"
+#include"Ball.h"
+#include"Item.h"
+#include"Brick.h"
+#include<stdlib.h>
+#include<time.h>
+#include<random>
+#include<math.h>
+
+#define Column 5 //cột
+#define Row 3   //hàng
+
+// window size and update rate (60 fps)
+int width = 1000;
+int height = 500;
+int interval = 1000 / 60;
+
+// score
+int score_left = 0;
+int score_right = 0;
+
+/*Khởi tạo các object*/
+Racket racket1;
+Racket racket2;
+Racket racket_1_character;
+Ball ball;
+Enermy enermy;
+Item item;
+Brick brick[Row][Column];
+
+void enable2D(int width, int height) {
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0.0f, width, 0.0f, height, 0.0f, 1.0f);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
+
+/*in văn bản ra màn hình*/
+void drawText(float x, float y, std::string text) {
+	glRasterPos2f(x, y);
+	glutBitmapString(GLUT_BITMAP_8_BY_13, (const unsigned char*)text.c_str());
+}
+
+/*Đổi số nguyên thành ký tự và giữ nguyên giá trị*/
+std::string int2str(int x) {
+	// converts int to string
+	std::stringstream ss;
+	ss << x;
+	return ss.str();
+}
+
+void draw2() {
+	
+	// clear (has to be done at the beginning)
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
+
+	//// ToDo: draw our scene
+
+	/// draw ball
+	//ball.drawRect(ball.get_ball_pos_x() - ball.get_ball_size() / 2, ball.get_ball_pos_y() - ball.get_ball_size() / 2, ball.get_ball_size(), ball.get_ball_size());
+	//// draw ball (easy version, but not entirely centered)
+	ball.drawRect(ball.get_ball_pos_x(), ball.get_ball_pos_y(), ball.get_ball_size(), ball.get_ball_size());
+
+	//// draw rackets
+	racket1.drawRect(racket1.get_racket_left_x(), racket1.get_racket_left_y(), racket1.get_racket_width(), racket1.get_racket_height());
+	racket2.drawRect(racket2.get_racket_right_x(), racket2.get_racket_right_y(), racket2.get_racket_width(), racket1.get_racket_height());
+
+	//draw item
+	item.drawCircle(400, 150);
+	item.drawRect(item.get_item_pos_x(), item.get_item_pos_y(), item.get_item_size(), item.get_item_size());
+
+	// draw score
+	drawText(width / 2 - 30, height - 30, int2str(score_left) + ":" + int2str(score_right));
+	drawText(30, height - 30, "SPACE: PAUSE");
+	drawText(30, height - 50, "ENTER: CONTINUE");
+	drawText(width - 140, height - 30, "ESC   : STOP");
+	drawText(width - 140, height - 50, "F1   : RESULT");
+
+	if (GetAsyncKeyState(VK_F1))   //Nhấn nút F1 để xuất kết quả
+	{
+		system("pause");
+		if (racket1.getPlayerWin() == true && racket2.getPlayerWin() == false)
+		{
+			drawText(width / 2 - 70, height / 2, "LEFT PLAYER WIN!");
+		}
+		else if (racket1.getPlayerWin() == false && racket2.getPlayerWin() == true)
+		{
+			drawText(width / 2 - 70, height / 2, "RIGHT PLAYER WIN!");
+		}
+		
+	}
+	
+	//draw Enermy
+	enermy.drawRect(enermy.get_enermy_pos_x(), enermy.get_enermy_pos_y(), enermy.get_enermy_width(), enermy.get_enermy_height());
+	//ball.updateBall(racket1, racket2, score_left, score_right, enermy);
+
+
+	// swap buffers (has to be done at the end)
+	glutSwapBuffers();
+}
+
+
+void update2(int value) {
+	// input handling
+	racket1.keyboard1();
+	racket2.keyboard2();
+
+	// update ball
+	ball.updateBall(racket1, racket2, score_left, score_right,enermy,item);
+
+	if (GetAsyncKeyState(VK_SPACE))    //nhấp nút SPACE để tạm dừng, nhấn Enter để tiếp tục
+	{
+		system("pause");
+	}
+
+	if (GetAsyncKeyState(VK_ESCAPE))    //nhấp nút SPACE để tạm dừng, nhấn Enter để tiếp tục
+	{
+		exit(0);
+	}
+
+	// Call update() again in 'interval' milliseconds
+	glutTimerFunc(interval, update2, 0);
+
+	// Redisplay frame
+	glutPostRedisplay();
+}
+
+
+void draw1() {
+
+	// clear (has to be done at the beginning)
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
+
+	//draw racket
+	int w = 150;  //Độ rộng thanh ngang
+	int h = 10;   //Độ dày thanh ngang
+	racket_1_character.set_racket_width(w);
+	racket_1_character.set_racket_height(h);
+	racket_1_character.drawRect(racket_1_character.get_racket_x(), racket_1_character.get_racket_y(), racket_1_character.get_racket_width(), racket_1_character.get_racket_height());
+
+	//draw ball
+	//float y = racket_1_character.get_racket_height() ;
+	//ball.set_ball_pos_y(y);
+	ball.drawRect(ball.get_ball_pos_x(), ball.get_ball_pos_y(), ball.get_ball_size(), ball.get_ball_size());
+
+
+	//draw brick
+	//brick.drawRect(10, 460, 150, 20);
+	int i, j;
+	for (i = 0; i < Row; i++)
+	{
+		for (j = 0; j < Column; j++)
+		{
+			int x = brick[i][j].get_brick_pos_x() + 160;
+			brick[i][j].set_brick_pos_x(x);
+			brick[i][j].drawRect(brick[i][j].get_brick_pos_x(), brick[i][j].get_brick_pos_y(), brick[i][j].get_brick_width(), brick[i][j].get_brick_height());
+			
+		}
+
+	//	//int y = brick[i][j].get_brick_pos_y() - 25;
+	//}
+
+	// swap buffers (has to be done at the end)
+	glutSwapBuffers();
+}
+
+void update1(int value) {
+	
+	racket_1_character.keyboardfor1character();
+
+	ball.updateBallfor1character(racket_1_character);
+
+	// Call update() again in 'interval' milliseconds
+	glutTimerFunc(interval, update1, 0);
+
+	// Redisplay frame
+	glutPostRedisplay();
+}
+
+
+// program entry point
+int main(int argc, char** argv) 
+{
+	int lc = 0;
+	while (1)
+	{
+		cout << "Chon chuc nang: ";
+		cout << "\n  1:Choi game";
+		cout << "\n  2:Thoat";
+		cout << "\n  Chuc nang: ";
+		cin >> lc;
+		if (lc == 1)  //Bắt đầu chơi game và vẽ trên console
+		{
+			cout << "0. Thoat/1. 1 nguoi choi/2. 2 nguoi choi\n";
+			int nguoichoi;
+			cin >> nguoichoi;
+			if (nguoichoi == 2)
+			{
+				// initialize opengl (via glut)
+				glutInit(&argc, argv);
+				glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+				glutInitWindowSize(width, height);
+				glutCreateWindow("DO AN CUOI KI GAME PINGPONG!");
+
+				// Register callback functions  
+				glutDisplayFunc(draw2);
+				glutTimerFunc(interval, update2, 0);
+
+				// setup scene to 2d mode and set draw color to white
+				enable2D(width, height);
+				glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
+
+				// start the whole thing
+				glutMainLoop();
+			}
+			if (nguoichoi == 1)
+			{
+				// initialize opengl (via glut)
+				glutInit(&argc, argv);
+				glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+				glutInitWindowSize(width, height);
+				glutCreateWindow("DO AN CUOI KI GAME PINGPONG!");
+
+				// Register callback functions  
+				glutDisplayFunc(draw1);
+				glutTimerFunc(interval, update1, 0);
+
+				// setup scene to 2d mode and set draw color to white
+				enable2D(width, height);
+				glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
+
+				// start the whole thing
+				glutMainLoop();
+			}
+		}
+		if (lc == 2)
+		{
+			cout << "Cam on ban da choi";
+			break;
+		}
+	}
+	
+	return 0;
+}
