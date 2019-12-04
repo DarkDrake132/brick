@@ -220,7 +220,7 @@ int main(int argc, char** argv)
 				// start the whole thing
 				glutMainLoop();
 			}
-			if (nguoichoi == 1)
+			if (nguoichoi != 1)
 			{
 				// initialize opengl (via glut)
 				glutInit(&argc, argv);
