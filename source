@@ -3,22 +3,31 @@
 #include"Ball.h"
 #include"Item.h"
 #include"Brick.h"
+#include"ArrayBrick.h"
 #include<stdlib.h>
 #include<time.h>
 #include<random>
 #include<math.h>
+#include<MMsystem.h>
+#include<Windows.h>
+#include<dos.h>
 
-#define Column 5 //cột
+
+#define Column 6 //cột
 #define Row 3   //hàng
+
 
 // window size and update rate (60 fps)
 int width = 1000;
 int height = 500;
 int interval = 1000 / 60;
 
+int level = 1;
+
 // score
 int score_left = 0;
 int score_right = 0;
+int score = 18;
 
 /*Khởi tạo các object*/
 Racket racket1;
@@ -28,6 +37,10 @@ Ball ball;
 Enermy enermy;
 Item item;
 Brick brick[Row][Column];
+
+//ArrayBrick *a = new ArrayBrick(Row, Column);
+//Brick** brick = a->GetArr();
+
 
 void enable2D(int width, int height) {
 	glViewport(0, 0, width, height);
@@ -53,8 +66,8 @@ std::string int2str(int x) {
 	return ss.str();
 }
 
-void draw2() {
-	
+void draw() {
+
 	// clear (has to be done at the beginning)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
@@ -71,7 +84,7 @@ void draw2() {
 	racket2.drawRect(racket2.get_racket_right_x(), racket2.get_racket_right_y(), racket2.get_racket_width(), racket1.get_racket_height());
 
 	//draw item
-	item.drawCircle(400, 150);
+	//item.drawCircle(400, 150);
 	item.drawRect(item.get_item_pos_x(), item.get_item_pos_y(), item.get_item_size(), item.get_item_size());
 
 	// draw score
@@ -84,17 +97,16 @@ void draw2() {
 	if (GetAsyncKeyState(VK_F1))   //Nhấn nút F1 để xuất kết quả
 	{
 		system("pause");
-		if (racket1.getPlayerWin() == true && racket2.getPlayerWin() == false)
+		if (score_left > score_right)
 		{
 			drawText(width / 2 - 70, height / 2, "LEFT PLAYER WIN!");
 		}
-		else if (racket1.getPlayerWin() == false && racket2.getPlayerWin() == true)
+		else if (score_left > score_right)
 		{
 			drawText(width / 2 - 70, height / 2, "RIGHT PLAYER WIN!");
 		}
-		
 	}
-	
+
 	//draw Enermy
 	enermy.drawRect(enermy.get_enermy_pos_x(), enermy.get_enermy_pos_y(), enermy.get_enermy_width(), enermy.get_enermy_height());
 	//ball.updateBall(racket1, racket2, score_left, score_right, enermy);
@@ -105,13 +117,13 @@ void draw2() {
 }
 
 
-void update2(int value) {
+void update(int value) {
 	// input handling
 	racket1.keyboard1();
 	racket2.keyboard2();
 
 	// update ball
-	ball.updateBall(racket1, racket2, score_left, score_right,enermy,item);
+	ball.updateBall(racket1, racket2, score_left, score_right, enermy, item);
 
 	if (GetAsyncKeyState(VK_SPACE))    //nhấp nút SPACE để tạm dừng, nhấn Enter để tiếp tục
 	{
@@ -124,10 +136,34 @@ void update2(int value) {
 	}
 
 	// Call update() again in 'interval' milliseconds
-	glutTimerFunc(interval, update2, 0);
+	glutTimerFunc(interval, update, 0);
 
 	// Redisplay frame
 	glutPostRedisplay();
+}
+
+
+bool WinOrLose()
+{
+	int dem = 0;
+	for (int i = 0; i < Row; i++)
+	{
+		for (int j = 0; j < Column; j++)
+		{
+			if (brick[i][j].get_exist() == 1)
+			{
+				dem++;
+			}
+		}
+	}
+	if (dem == 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 
@@ -149,33 +185,80 @@ void draw1() {
 	//ball.set_ball_pos_y(y);
 	ball.drawRect(ball.get_ball_pos_x(), ball.get_ball_pos_y(), ball.get_ball_size(), ball.get_ball_size());
 
+	drawText(20, height - 30, "SPACE: RESUME");
+	drawText(width - 110, height - 30, "F1: PAUSE");
+	drawText(20, height - 50, "ESC: STOP");
 
 	//draw brick
-	//brick.drawRect(10, 460, 150, 20);
+	//brick.drawRect(20, 460, 150, 20);
 	int i, j;
-	int x = 10;
-	int y = 460;
+	int x, y;
+	x = 20;
+	y = 420;
 	for (i = 0; i < Row; i++)
 	{
 		for (j = 0; j < Column; j++)
 		{
 			brick[i][j].drawRect(x, y, brick[i][j].get_brick_width(), brick[i][j].get_brick_height());
+			brick[i][j].set_brick_pos_x(x);
+			brick[i][j].set_brick_pos_y(y);
 			x += 160;
 		}
-		y += 30;
-		x = 10;
-	//	//int y = brick[i][j].get_brick_pos_y() - 25;
-	//}
+		y -= 30;
+		x = 20;
+	}
+
+
+	if (WinOrLose() == true)
+	{
+		drawText(width / 2 - 70, height / 2, "PLAYER WIN!");
+		//exit(1);
+		//system("pause");	
+		_getch();
+	}
+	cout << level << endl;
+
+	//draw enermy
+	if (level == 4 || level == 4)
+	{
+		enermy.set_enermy_width(150);
+		enermy.set_enermy_height(20);
+		float pos_y = 330;
+		enermy.set_enermy_pos_y(pos_y);
+		enermy.drawRect(enermy.get_enermy_pos_x(), enermy.get_enermy_pos_y(), enermy.get_enermy_width(), enermy.get_enermy_height());
+	}
+
 
 	// swap buffers (has to be done at the end)
 	glutSwapBuffers();
 }
 
+
 void update1(int value) {
-	
+
+
 	racket_1_character.keyboardfor1character();
 
-	ball.updateBallfor1character(racket_1_character);
+	ball.updateBallfor1character(racket_1_character, enermy, level);
+
+	int i, j;
+	for (i = 0; i < Row; i++)
+	{
+		for (j = 0; j < Column; j++)
+		{
+			brick[i][j].updateBrick(ball, level);
+		}
+	}
+
+	if (GetAsyncKeyState(VK_F1))    //nhấp nút SPACE để tạm dừng, nhấn Enter để tiếp tục
+	{
+		system("pause");
+		//_getch();
+	}
+	if (GetAsyncKeyState(VK_ESCAPE))    //nhấp nút SPACE để tạm dừng, nhấn Enter để tiếp tục
+	{
+		exit(0);
+	}
 
 	// Call update() again in 'interval' milliseconds
 	glutTimerFunc(interval, update1, 0);
@@ -185,9 +268,11 @@ void update1(int value) {
 }
 
 
+
 // program entry point
-int main(int argc, char** argv) 
+int main(int argc, char** argv)
 {
+	//PlaySound(TEXT("ChooseAChocobo-V.A-3316579.wav"), NULL, SND_ASYNC);
 	int lc = 0;
 	while (1)
 	{
@@ -207,11 +292,11 @@ int main(int argc, char** argv)
 				glutInit(&argc, argv);
 				glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 				glutInitWindowSize(width, height);
-				glutCreateWindow("DO AN CUOI KI GAME PINGPONG!");
+				glutCreateWindow("2 NGUOI CHOI!");
 
 				// Register callback functions  
-				glutDisplayFunc(draw2);
-				glutTimerFunc(interval, update2, 0);
+				glutDisplayFunc(draw);
+				glutTimerFunc(interval, update, 0);
 
 				// setup scene to 2d mode and set draw color to white
 				enable2D(width, height);
@@ -220,24 +305,89 @@ int main(int argc, char** argv)
 				// start the whole thing
 				glutMainLoop();
 			}
-			if (nguoichoi != 1)
+
+			if (nguoichoi == 1)
 			{
-				// initialize opengl (via glut)
-				glutInit(&argc, argv);
-				glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-				glutInitWindowSize(width, height);
-				glutCreateWindow("DO AN CUOI KI GAME PINGPONG!");
+				while (level >= 1 && level <= 4)
+				{
+					/*cout << "Lua chon level ban muon choi [1->4]:";
+					cin >> level;*/
+					// initialize opengl (via glut)
 
-				// Register callback functions  
-				glutDisplayFunc(draw1);
-				glutTimerFunc(interval, update1, 0);
+					if (level == 1)
+					{
+						glutInit(&argc, argv);
+						glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+						glutInitWindowSize(width, height);
+						glutCreateWindow("1 NGUOI CHOI - LEVEL 1!");
+						// Register callback functions 
 
-				// setup scene to 2d mode and set draw color to white
-				enable2D(width, height);
-				glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
+						glutDisplayFunc(draw1);
+						glutTimerFunc(interval, update1, 0);
 
-				// start the whole thing
-				glutMainLoop();
+						// setup scene to 2d mode and set draw color to white
+						enable2D(width, height);
+						//glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
+
+						// start the whole thing
+						glutMainLoop();
+					}
+					if (level == 2)
+					{
+						glutInit(&argc, argv);
+						glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+						glutInitWindowSize(width, height);
+						glutCreateWindow("1 NGUOI CHOI - LEVEL 2!");
+						// Register callback functions 
+
+						glutDisplayFunc(draw1);
+						glutTimerFunc(interval, update1, 0);
+
+						// setup scene to 2d mode and set draw color to white
+						enable2D(width, height);
+						//glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
+
+						// start the whole thing
+						glutMainLoop();
+					}
+					if (level == 3)
+					{
+						glutInit(&argc, argv);
+						glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+						glutInitWindowSize(width, height);
+						glutCreateWindow("1 NGUOI CHOI - LEVEL 3!");
+						// Register callback functions 
+
+						glutDisplayFunc(draw1);
+						glutTimerFunc(interval, update1, 0);
+
+						// setup scene to 2d mode and set draw color to white
+						enable2D(width, height);
+						//glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
+
+						// start the whole thing
+						glutMainLoop();
+					}
+					if (level == 4)
+					{
+						glutInit(&argc, argv);
+						glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+						glutInitWindowSize(width, height);
+						glutCreateWindow("1 NGUOI CHOI - LEVEL 4!");
+						// Register callback functions 
+
+						glutDisplayFunc(draw1);
+						glutTimerFunc(interval, update1, 0);
+
+						// setup scene to 2d mode and set draw color to white
+						enable2D(width, height);
+						//glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
+
+						// start the whole thing
+						glutMainLoop();
+					}
+					level++;
+				}
 			}
 		}
 		if (lc == 2)
@@ -246,6 +396,8 @@ int main(int argc, char** argv)
 			break;
 		}
 	}
-	
+
 	return 0;
 }
+
+
