@@ -11,11 +11,10 @@
 #include<MMsystem.h>
 #include<Windows.h>
 #include<dos.h>
-
+#include<map>
 
 #define Column 6 //cột
 #define Row 3   //hàng
-
 
 // window size and update rate (60 fps)
 int width = 1000;
@@ -267,7 +266,36 @@ void update1(int value) {
 	glutPostRedisplay();
 }
 
-
+void GetMeTheList()
+{
+	//Tạo trước cái file để tranh lỗi
+	//từng dòng có định dạng như sau:
+	//
+	//Doan Xuan Bach:13
+	//Nguyen Thuy Duong:12
+	
+	map<string, int> BXH;
+	
+	freopen("BXH.txt", "rt", stdin);
+	while(!cin.eof())
+	{
+		string name;
+		int point;
+		getline(cin, name, ':');
+		cin >> point;
+		BXH.insert(pair<string, int>(name, point));
+	}
+	cin.clear();
+	freopen("CON", "rt", stdin);
+	
+	//cái map này là để chạy theo từng phần tử của BXH, tức là map là ta không thể tóm được phần tử mà phải nhờ đến 1 thằng phụ
+	map<string, int>::iterator Print;
+	for (Print = DS.begin(); Print != DS.end(); ++Print)
+	{	
+		//Vẽ vời gì đó để in cái này ra màn hình game
+		//cout << endl << Print->first << " : " << Print->second;
+	}
+}
 
 // program entry point
 int main(int argc, char** argv)
@@ -277,10 +305,17 @@ int main(int argc, char** argv)
 	while (1)
 	{
 		cout << "Chon chuc nang: ";
+		cout << "\n  0:Xem BXH 1 nguoi choi";
 		cout << "\n  1:Choi game";
 		cout << "\n  2:Thoat";
 		cout << "\n  Chuc nang: ";
 		cin >> lc;
+		if (lc == 0)
+		{
+			//Vẽ màn hình trước(mấy thao tác như ở dưới để vẽ)
+			GetMeTheList()
+		}
+		
 		if (lc == 1)  //Bắt đầu chơi game và vẽ trên console
 		{
 			cout << "0. Thoat/1. 1 nguoi choi/2. 2 nguoi choi\n";
