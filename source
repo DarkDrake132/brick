@@ -11,10 +11,12 @@
 #include<MMsystem.h>
 #include<Windows.h>
 #include<dos.h>
-
+#include<map>
+#include<iomanip>
+#pragma warning(disable:4996)
 
 #define Column 6 //cột
-#define Row 3   //hàng
+#define Row 1   //hàng
 
 
 // window size and update rate (60 fps)
@@ -22,12 +24,24 @@ int width = 1000;
 int height = 500;
 int interval = 1000 / 60;
 
-int level = 1;
+int level = 4;
+int dem = 0;
 
 // score
 int score_left = 0;
 int score_right = 0;
-int score = 18;
+//int score = 18;
+int ScoreOfPlayer = 0;
+string Name;
+
+struct SCORE
+{
+	string name;
+	int score;
+};
+vector<SCORE> Score;
+vector<SCORE> TempScore;
+SCORE Temp[5];
 
 /*Khởi tạo các object*/
 Racket racket1;
@@ -36,7 +50,11 @@ Racket racket_1_character;
 Ball ball;
 Enermy enermy;
 Item item;
-Brick brick[Row][Column];
+Brick brick1[Row][Column];
+Brick brick2[Row][Column];
+Brick brick3[Row][Column];
+Brick brick4[Row][Column];
+
 
 //ArrayBrick *a = new ArrayBrick(Row, Column);
 //Brick** brick = a->GetArr();
@@ -56,6 +74,7 @@ void enable2D(int width, int height) {
 void drawText(float x, float y, std::string text) {
 	glRasterPos2f(x, y);
 	glutBitmapString(GLUT_BITMAP_8_BY_13, (const unsigned char*)text.c_str());
+	glColor3f(1.0f, 0.0f, 0.0f);
 }
 
 /*Đổi số nguyên thành ký tự và giữ nguyên giá trị*/
@@ -67,7 +86,6 @@ std::string int2str(int x) {
 }
 
 void draw() {
-
 	// clear (has to be done at the beginning)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
@@ -143,7 +161,7 @@ void update(int value) {
 }
 
 
-bool WinOrLose()
+bool WinOrLose(Brick brick[Row][Column])
 {
 	int dem = 0;
 	for (int i = 0; i < Row; i++)
@@ -166,6 +184,125 @@ bool WinOrLose()
 	}
 }
 
+void Swap(SCORE& a, SCORE& b)
+{
+	SCORE c = a;
+	a = b;
+	b = c;
+}
+
+void SapXepGiamDan(SCORE a[])
+{
+	for (int i = 0; i < 5; i++)
+	{
+		int min = i;
+		for (int j = 0; j < 5; j++)
+		{
+			if (a[j].score < a[min].score)
+			{
+				min = j;
+			}
+		}
+		Swap(a[i], a[min]);
+	}
+}
+
+void SapXepGiamDan(vector<SCORE> a)
+{
+	for (int i = 0; i < a.size() - 1; i++)
+	{
+		int min = i;
+		for (int j = 0; j < a.size(); j++)
+		{
+			if (a[j].score < a[min].score)
+			{
+				min = j;
+			}
+		}
+		Swap(a[i], a[min]);
+	}
+}
+
+
+void ThemVaoFileTam(vector<SCORE> Score)
+{
+	TempScore.push_back(Score[0]);
+	for (int i = 1; i < Score.size(); i++)
+	{
+		if (Score[i].name != Score[i - 1].name)
+		{
+			TempScore.push_back(Score[i]);
+		}
+	}
+	SapXepGiamDan(TempScore);
+}
+
+void DocFileBXH()
+{
+	freopen("BXH.txt", "rt", stdin);
+	while (!cin.eof())
+	{
+		string n;
+		int s;
+		getline(cin, n, '-');
+		if (n[0] == '\n')
+		{
+			n.erase(0, 1);
+		}
+		cin >> s;
+		SCORE temp;
+		temp.name = n;
+		temp.score = s;
+		Score.push_back(temp);
+	}
+	freopen("CON", "rt", stdin);
+	cin.clear();
+	for (int i = 0; i < 5; i++)
+	{
+		Temp[i] = Score[i];
+	}
+}
+
+void GetMeTheList()
+{
+	//Tạo trước cái file để tranh lỗi
+	//từng dòng có định dạng như sau:
+	//
+	//Doan Xuan Bach:13
+	//Nguyen Thuy Duong:12
+
+	map<string, int> BXH;
+
+	freopen("BXH.txt", "rt", stdin);
+	while (!cin.eof())
+	{
+		string name;
+		int point;
+		cin.ignore();
+		getline(cin, name, '-');
+		cin >> point;
+		BXH.insert(pair<string, int>(name, point));
+	}
+	cin.clear();
+	freopen("CON", "rt", stdin);
+
+	//cái map này là để chạy theo từng phần tử của BXH, tức là map là ta không thể tóm được phần tử mà phải nhờ đến 1 thằng phụ
+	map<string, int>::iterator Print;
+
+	cout << setw(76) << "BANG XEP HANG THANH TICH\n";
+	cout << setw(75) << "***********************\n";
+	for (Print = BXH.begin(); Print != BXH.end(); ++Print)
+	{
+		if (Print->first == "")
+		{
+			continue;
+		}
+		//Vẽ vời gì đó để in cái này ra màn hình game
+		cout << setw(50)<<"*"<<setw(12)<< Print->first << " : " << Print->second <<setw(10)<<"*"<< endl;
+		//drawText(width / 2 - 70, height / 2, Print->first + " : " + int2str(Print->second));
+	}
+	cout << setw(75) << "***********************\n";
+}
 
 void draw1() {
 
@@ -187,39 +324,228 @@ void draw1() {
 
 	drawText(20, height - 30, "SPACE: RESUME");
 	drawText(width - 110, height - 30, "F1: PAUSE");
+	drawText(width - 110, height - 50, Name);
 	drawText(20, height - 50, "ESC: STOP");
+	drawText(width / 2 - 30, height - 30, int2str(ScoreOfPlayer));
+
 
 	//draw brick
 	//brick.drawRect(20, 460, 150, 20);
-	int i, j;
-	int x, y;
-	x = 20;
-	y = 420;
-	for (i = 0; i < Row; i++)
+	if (level == 1)
 	{
-		for (j = 0; j < Column; j++)
-		{
-			brick[i][j].drawRect(x, y, brick[i][j].get_brick_width(), brick[i][j].get_brick_height());
-			brick[i][j].set_brick_pos_x(x);
-			brick[i][j].set_brick_pos_y(y);
-			x += 160;
-		}
-		y -= 30;
+
+		int i, j;
+		int x, y;
 		x = 20;
+		y = 420;
+		for (i = 0; i < Row; i++)
+		{
+			for (j = 0; j < Column; j++)
+			{
+				brick1[i][j].drawRect(x, y, brick1[i][j].get_brick_width(), brick1[i][j].get_brick_height());
+				brick1[i][j].set_brick_pos_x(x);
+				brick1[i][j].set_brick_pos_y(y);
+				x += 160;
+			}
+			y -= 30;
+			x = 20;
+		}
+
+		if (WinOrLose(brick1) == true)
+		{
+			level = 2;
+		}
 	}
+	//cout << level << endl;
 
-
-	if (WinOrLose() == true)
+	if (level == 2)
 	{
-		drawText(width / 2 - 70, height / 2, "PLAYER WIN!");
-		//exit(1);
-		//system("pause");	
-		_getch();
+		ball.drawRect(ball.get_ball_pos_x(), ball.get_ball_pos_y(), ball.get_ball_size(), ball.get_ball_size());
+		int i, j;
+		int x, y;
+		x = 20;
+		y = 420;
+		for (i = 0; i < Row; i++)
+		{
+			for (j = 0; j < Column; j++)
+			{
+				brick2[i][j].drawRect(x, y, brick2[i][j].get_brick_width(), brick2[i][j].get_brick_height());
+				brick2[i][j].set_brick_pos_x(x);
+				brick2[i][j].set_brick_pos_y(y);
+				x += 160;
+			}
+			y -= 30;
+			x = 20;
+		}
+
+		if (WinOrLose(brick2) == true)
+		{
+
+			level = 3;
+		}
 	}
-	cout << level << endl;
+
+	if (level == 3)
+	{
+		int i, j;
+		int x, y;
+		x = 20;
+		y = 420;
+		for (i = 0; i < Row; i++)
+		{
+			for (j = 0; j < Column; j++)
+			{
+				brick3[i][j].drawRect(x, y, brick3[i][j].get_brick_width(), brick3[i][j].get_brick_height());
+				brick3[i][j].set_brick_pos_x(x);
+				brick3[i][j].set_brick_pos_y(y);
+				x += 160;
+			}
+			y -= 30;
+			x = 20;
+		}
+		if (WinOrLose(brick3) == true)
+		{
+			level = 4;
+		}
+	}
+
+	if (level == 4)
+	{
+
+		int i, j;
+		int x, y;
+		x = 20;
+		y = 420;
+		for (i = 0; i < Row; i++)
+		{
+			for (j = 0; j < Column; j++)
+			{
+				brick4[i][j].drawRect(x, y, brick4[i][j].get_brick_width(), brick4[i][j].get_brick_height());
+				brick4[i][j].set_brick_pos_x(x);
+				brick4[i][j].set_brick_pos_y(y);
+				x += 160;
+			}
+			y -= 30;
+			x = 20;
+		}
+		if (WinOrLose(brick4) == true)
+		{
+			racket_1_character.setPlayerWin();
+			level = 5;
+			racket_1_character.setPlayerWin();
+
+			/*freopen("BXH.txt", "at", stdout);
+			cout << Name << "-" << ScoreOfPlayer << endl;
+			freopen("CON", "at", stdout);
+			cin.clear();
+			return;*/
+
+			/*	freopen("TempBXH.txt", "wt", stdout);
+				cout << Name << "-" << ScoreOfPlayer << endl;
+				freopen("CON", "wt", stdout);
+				cin.clear();
+
+				string n;
+				int s;
+				freopen("TempBXH.txt", "rt", stdin);
+				getline(cin, n, '-');
+				cin >> s;
+				freopen("CON", "rt", stdin);
+				cin.clear();
+
+				freopen("BXH.txt", "at", stdout);
+				cout << n << "-" << s << endl;
+				freopen("CON", "at", stdout);
+				cin.clear();*/
+		}
+		//drawText(width / 2 - 70, height / 2, "PLAYER WIN!");
+	}
+
+	if (level == 5)
+	{
+		/*freopen("BXH.txt", "at", stdout);
+		cout << Name << "-" << ScoreOfPlayer << endl;
+		freopen("CON", "at", stdout);
+		cin.clear();
+
+		freopen("BXH.txt", "rt", stdin);
+		while (!cin.eof())
+		{
+			string a;
+			int b;
+			getline(cin, a, '-');
+			if (a[0] == '\n')
+			{
+				a.erase(0, 1);
+			}
+			cin >> b;
+			SCORE temp;
+			temp.name = a;
+			temp.score = b;
+			Score.push_back(temp);
+		}
+		freopen("CON", "rt", stdin);
+		cin.clear();*/
+
+		//TempScore.push_back(Score[0]);
+		//for (int i = 1; i < Score.size(); i++)
+		//{
+		//	if (Score[i].name != Score[i - 1].name)
+		//	{
+		//		TempScore.push_back(Score[i]);
+		//	}
+		//}
+		////SapXepGiamDan(TempScore);
+		//for (int i = 0; i < TempScore.size() - 1; i++)
+		//{
+		//	int min = i;
+		//	for (int j = 0; j < TempScore.size(); j++)
+		//	{
+		//		if (TempScore[j].score < TempScore[min].score)
+		//		{
+		//			min = j;
+		//		}
+		//	}
+		//	Swap(TempScore[i], TempScore[min]);
+		//}
+
+		/*drawText(width / 2 - 70, height / 2, Temp[0].name + " : " + int2str(Temp[0].score));
+		drawText(width / 2 - 70, height / 2 - 20, Temp[1].name + " : " + int2str(Temp[1].score));
+		drawText(width / 2 - 70, height / 2 - 40, Temp[2].name + " : " + int2str(Temp[2].score));
+		drawText(width / 2 - 70, height / 2 - 60, Temp[3].name + " : " + int2str(Temp[3].score));
+		drawText(width / 2 - 70, height / 2 - 80, Temp[4].name + " : " + int2str(Temp[4].score));*/
+
+		/*drawText(width / 2 - 70, height / 2, TempScore[0].name + " : " + int2str(TempScore[0].score));
+		drawText(width / 2 - 70, height / 2 - 20, TempScore[1].name + " : " + int2str(TempScore[1].score));
+		drawText(width / 2 - 70, height / 2 - 40, TempScore[2].name + " : " + int2str(TempScore[2].score));
+		drawText(width / 2 - 70, height / 2 - 60, TempScore[3].name + " : " + int2str(TempScore[3].score));
+		drawText(width / 2 - 70, height / 2 - 80, TempScore[4].name + " : " + int2str(TempScore[4].score));
+		_getch();*/
+
+		if (racket_1_character.getPlayerWin() == true && WinOrLose(brick4) == true)
+		{
+			freopen("BXH.txt", "at", stdout);
+			cout << Name << "-" << ScoreOfPlayer << endl;
+			freopen("CON", "at", stdout);
+			cin.clear();
+
+			drawText(width / 2 - 70, height / 2, "PLAYER WIN!");
+		}
+		if (racket_1_character.getPlayerWin() == false)
+		{
+			freopen("BXH.txt", "at", stdout);
+			cout << Name << "-" << ScoreOfPlayer << endl;
+			freopen("CON", "at", stdout);
+			cin.clear();
+
+			drawText(width / 2 - 70, height / 2, "PLAYER LOSE!");
+		}
+		//drawText(width / 2 - 70, height / 2,"Nguoi choi: " + Name + " - " + int2str(ScoreOfPlayer));
+
+	}
 
 	//draw enermy
-	if (level == 4 || level == 4)
+	if (level == 3 || level == 4)
 	{
 		enermy.set_enermy_width(150);
 		enermy.set_enermy_height(20);
@@ -234,31 +560,71 @@ void draw1() {
 }
 
 
+
 void update1(int value) {
 
 
 	racket_1_character.keyboardfor1character();
 
-	ball.updateBallfor1character(racket_1_character, enermy, level);
+	ball.updateBallfor1character(racket_1_character, enermy, level, Name, ScoreOfPlayer);
+
 
 	int i, j;
-	for (i = 0; i < Row; i++)
+	if (level == 1)
 	{
-		for (j = 0; j < Column; j++)
+		for (i = 0; i < Row; i++)
 		{
-			brick[i][j].updateBrick(ball, level);
+			for (j = 0; j < Column; j++)
+			{
+				brick1[i][j].updateBrick(ball, level, ScoreOfPlayer);
+			}
 		}
 	}
-
-	if (GetAsyncKeyState(VK_F1))    //nhấp nút SPACE để tạm dừng, nhấn Enter để tiếp tục
+	if (level == 2)
+	{
+		for (i = 0; i < Row; i++)
+		{
+			for (j = 0; j < Column; j++)
+			{
+				brick2[i][j].updateBrick(ball, level, ScoreOfPlayer);
+			}
+		}
+	}
+	if (level == 3)
+	{
+		for (i = 0; i < Row; i++)
+		{
+			for (j = 0; j < Column; j++)
+			{
+				brick3[i][j].updateBrick(ball, level, ScoreOfPlayer);
+			}
+		}
+	}
+	if (level == 4)
+	{
+		for (i = 0; i < Row; i++)
+		{
+			for (j = 0; j < Column; j++)
+			{
+				brick4[i][j].updateBrick(ball, level, ScoreOfPlayer);
+			}
+		}
+	}
+	if (level == 5)
+	{
+		racket_1_character.~Racket();
+		ball.~Ball();
+	}
+	if (GetAsyncKeyState(VK_F1))
 	{
 		system("pause");
 		//_getch();
 	}
-	if (GetAsyncKeyState(VK_ESCAPE))    //nhấp nút SPACE để tạm dừng, nhấn Enter để tiếp tục
+	if (GetAsyncKeyState(VK_ESCAPE))
 	{
 		exit(0);
 	}
+	
 
 	// Call update() again in 'interval' milliseconds
 	glutTimerFunc(interval, update1, 0);
@@ -276,11 +642,18 @@ int main(int argc, char** argv)
 	int lc = 0;
 	while (1)
 	{
-		cout << "Chon chuc nang: ";
+		cout << "\nChon chuc nang: ";
+		cout << "\n  0:Xem BXH 1 nguoi choi";
 		cout << "\n  1:Choi game";
 		cout << "\n  2:Thoat";
 		cout << "\n  Chuc nang: ";
 		cin >> lc;
+		if (lc == 0)
+		{
+			
+			GetMeTheList();
+		
+		}
 		if (lc == 1)  //Bắt đầu chơi game và vẽ trên console
 		{
 			cout << "0. Thoat/1. 1 nguoi choi/2. 2 nguoi choi\n";
@@ -308,85 +681,29 @@ int main(int argc, char** argv)
 
 			if (nguoichoi == 1)
 			{
+				cout << "Nhap ten nguoi choi:";
+				cin.ignore();
+				getline(cin, Name);
 				while (level >= 1 && level <= 4)
 				{
-					/*cout << "Lua chon level ban muon choi [1->4]:";
-					cin >> level;*/
-					// initialize opengl (via glut)
+					//initialize opengl (via glut)
 
-					if (level == 1)
-					{
-						glutInit(&argc, argv);
-						glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-						glutInitWindowSize(width, height);
-						glutCreateWindow("1 NGUOI CHOI - LEVEL 1!");
-						// Register callback functions 
+					glutInit(&argc, argv);
+					glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+					glutInitWindowSize(width, height);
+					glutCreateWindow("1 NGUOI CHOI!");
+					// Register callback functions 
 
-						glutDisplayFunc(draw1);
-						glutTimerFunc(interval, update1, 0);
+					glutDisplayFunc(draw1);
+					glutTimerFunc(interval, update1, 0);
 
-						// setup scene to 2d mode and set draw color to white
-						enable2D(width, height);
-						//glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
+					// setup scene to 2d mode and set draw color to white
+					enable2D(width, height);
+					//glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
 
-						// start the whole thing
-						glutMainLoop();
-					}
-					if (level == 2)
-					{
-						glutInit(&argc, argv);
-						glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-						glutInitWindowSize(width, height);
-						glutCreateWindow("1 NGUOI CHOI - LEVEL 2!");
-						// Register callback functions 
+					// start the whole thing
+					glutMainLoop();
 
-						glutDisplayFunc(draw1);
-						glutTimerFunc(interval, update1, 0);
-
-						// setup scene to 2d mode and set draw color to white
-						enable2D(width, height);
-						//glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
-
-						// start the whole thing
-						glutMainLoop();
-					}
-					if (level == 3)
-					{
-						glutInit(&argc, argv);
-						glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-						glutInitWindowSize(width, height);
-						glutCreateWindow("1 NGUOI CHOI - LEVEL 3!");
-						// Register callback functions 
-
-						glutDisplayFunc(draw1);
-						glutTimerFunc(interval, update1, 0);
-
-						// setup scene to 2d mode and set draw color to white
-						enable2D(width, height);
-						//glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
-
-						// start the whole thing
-						glutMainLoop();
-					}
-					if (level == 4)
-					{
-						glutInit(&argc, argv);
-						glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-						glutInitWindowSize(width, height);
-						glutCreateWindow("1 NGUOI CHOI - LEVEL 4!");
-						// Register callback functions 
-
-						glutDisplayFunc(draw1);
-						glutTimerFunc(interval, update1, 0);
-
-						// setup scene to 2d mode and set draw color to white
-						enable2D(width, height);
-						//glColor3f(1.0f, 1.0f, 1.0f);  //chỉnh màu nền
-
-						// start the whole thing
-						glutMainLoop();
-					}
-					level++;
 				}
 			}
 		}
