@@ -289,6 +289,7 @@ void GetMeTheList()
 	//cái map này là để chạy theo từng phần tử của BXH, tức là map là ta không thể tóm được phần tử mà phải nhờ đến 1 thằng phụ
 	map<string, int>::iterator Print;
 
+
 	cout << setw(76) << "BANG XEP HANG THANH TICH\n";
 	cout << setw(75) << "***********************\n";
 	for (Print = BXH.begin(); Print != BXH.end(); ++Print)
@@ -434,93 +435,11 @@ void draw1() {
 			level = 5;
 			racket_1_character.setPlayerWin();
 
-			/*freopen("BXH.txt", "at", stdout);
-			cout << Name << "-" << ScoreOfPlayer << endl;
-			freopen("CON", "at", stdout);
-			cin.clear();
-			return;*/
-
-			/*	freopen("TempBXH.txt", "wt", stdout);
-				cout << Name << "-" << ScoreOfPlayer << endl;
-				freopen("CON", "wt", stdout);
-				cin.clear();
-
-				string n;
-				int s;
-				freopen("TempBXH.txt", "rt", stdin);
-				getline(cin, n, '-');
-				cin >> s;
-				freopen("CON", "rt", stdin);
-				cin.clear();
-
-				freopen("BXH.txt", "at", stdout);
-				cout << n << "-" << s << endl;
-				freopen("CON", "at", stdout);
-				cin.clear();*/
 		}
-		//drawText(width / 2 - 70, height / 2, "PLAYER WIN!");
 	}
 
 	if (level == 5)
 	{
-		/*freopen("BXH.txt", "at", stdout);
-		cout << Name << "-" << ScoreOfPlayer << endl;
-		freopen("CON", "at", stdout);
-		cin.clear();
-
-		freopen("BXH.txt", "rt", stdin);
-		while (!cin.eof())
-		{
-			string a;
-			int b;
-			getline(cin, a, '-');
-			if (a[0] == '\n')
-			{
-				a.erase(0, 1);
-			}
-			cin >> b;
-			SCORE temp;
-			temp.name = a;
-			temp.score = b;
-			Score.push_back(temp);
-		}
-		freopen("CON", "rt", stdin);
-		cin.clear();*/
-
-		//TempScore.push_back(Score[0]);
-		//for (int i = 1; i < Score.size(); i++)
-		//{
-		//	if (Score[i].name != Score[i - 1].name)
-		//	{
-		//		TempScore.push_back(Score[i]);
-		//	}
-		//}
-		////SapXepGiamDan(TempScore);
-		//for (int i = 0; i < TempScore.size() - 1; i++)
-		//{
-		//	int min = i;
-		//	for (int j = 0; j < TempScore.size(); j++)
-		//	{
-		//		if (TempScore[j].score < TempScore[min].score)
-		//		{
-		//			min = j;
-		//		}
-		//	}
-		//	Swap(TempScore[i], TempScore[min]);
-		//}
-
-		/*drawText(width / 2 - 70, height / 2, Temp[0].name + " : " + int2str(Temp[0].score));
-		drawText(width / 2 - 70, height / 2 - 20, Temp[1].name + " : " + int2str(Temp[1].score));
-		drawText(width / 2 - 70, height / 2 - 40, Temp[2].name + " : " + int2str(Temp[2].score));
-		drawText(width / 2 - 70, height / 2 - 60, Temp[3].name + " : " + int2str(Temp[3].score));
-		drawText(width / 2 - 70, height / 2 - 80, Temp[4].name + " : " + int2str(Temp[4].score));*/
-
-		/*drawText(width / 2 - 70, height / 2, TempScore[0].name + " : " + int2str(TempScore[0].score));
-		drawText(width / 2 - 70, height / 2 - 20, TempScore[1].name + " : " + int2str(TempScore[1].score));
-		drawText(width / 2 - 70, height / 2 - 40, TempScore[2].name + " : " + int2str(TempScore[2].score));
-		drawText(width / 2 - 70, height / 2 - 60, TempScore[3].name + " : " + int2str(TempScore[3].score));
-		drawText(width / 2 - 70, height / 2 - 80, TempScore[4].name + " : " + int2str(TempScore[4].score));
-		_getch();*/
 
 		if (racket_1_character.getPlayerWin() == true && WinOrLose(brick4) == true)
 		{
